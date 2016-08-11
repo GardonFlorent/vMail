@@ -1,16 +1,17 @@
 apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: 'application'
-
+def progName = 'vMail'
+def progVersion = '0.1.0'
 mainClassName = 'com.esgi.vMail.control.Main'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    flatDir {
+    /*flatDir {
         dirs 'lib'
-    }
+    }*/
 }
 
 dependencies {
@@ -21,7 +22,9 @@ dependencies {
             'org.igniterealtime.smack:smack-im:4.2.0-beta1',
             'org.igniterealtime.smack:smack-java7:4.2.0-beta1',
             'org.igniterealtime.smack:smack-tcp:4.2.0-beta1',
-            'D&SAnnotations:D&SAnnotations:0.1.0'
+            /*'D&SAnnotations:D&SAnnotations:0.1.0',*/
+            project(':Javax-module-processing'),
+            project(':vMail-annotations')
 }
 
 jar {
@@ -34,8 +37,8 @@ jar {
 
 task fatJar(type: Jar) {
 	manifest {
-        attributes 'Implementation-Title': 'vMail',  
-        	'Implementation-Version': '0.1.0',
+        attributes 'Implementation-Title': progName,
+        	'Implementation-Version': progVersion,
         	'Main-Class': 'com.esgi.vMail.control.Main'
     }
     baseName = project.name + '-all'

@@ -1,0 +1,11 @@
+rootProject.name = 'vMail'
+
+String[] dependency = [
+        'Javax-module-processing',
+        'Java-nio-directory',
+        'vMail-annotations'
+]
+
+dependency.each {
+    includeFlat it
+}

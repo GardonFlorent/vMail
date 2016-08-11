@@ -2,17 +2,21 @@ package com.esgi.vMail.model;
 
 import com.esgi.vMail.control.ConnectionManager;
 import com.esgi.vMail.control.LangManager;
+import com.esgi.vMail.control.plugin.Launchable;
+import com.esgi.vMail.control.plugin.Parser;
+import com.esgi.vMail.control.plugin.PluginList;
+import com.esgi.vMail.plugins.PluginType;
 import javafx.application.Platform;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventType;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
@@ -20,8 +24,12 @@ import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence;
 
+import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
@@ -51,6 +59,17 @@ public class Chat {
 
 		public ChatTab(Chat chat) {
 			super();
+            //Gestion addon
+            Parser.getAddonMap().get(PluginType.MESSAGE).forEach(launchable -> ((Launchable<WebView>)launchable).launch(this.messagesDisplay));
+            Parser.getAddonMap().get(PluginType.MESSAGE).addListener((ListChangeListener<? super Launchable<?>>) change -> {
+                if (change.wasAdded()) {
+                    change.getAddedSubList().forEach(addon -> ((Launchable<WebView>) addon).launch(this.messagesDisplay));
+                } else {
+                    change.getRemoved().forEach(addon -> {
+                        ((Launchable<WebView>) Parser.getUnloadMap().get(addon)).launch(this.messagesDisplay);
+                    });
+                }
+            });
 			messageBuilder
 			.append("<head>")
 			.append("<script language=\"javascript\" type=\"text/javascript\">")
@@ -83,7 +102,8 @@ public class Chat {
 
 		private void setOnPresenceChange() {
 			this.receiver.get().setPresenceListener((observable, oldValue, newValue) -> {
-                messageBuilder.append(receiver.get().getEntry().getName()).append(' ').append(LangManager.text("chat.presence.change")).append(' ').append(LangManager.text("chat.presence.status."+newValue.getMode().name())).append("<br>");
+				System.err.println(newValue.getType().name());
+                messageBuilder.append(receiver.get().getEntry().getName()).append(' ').append(LangManager.text("chat.presence.change")).append(' ').append(LangManager.text("chat.presence.status."+((newValue.getType().equals(Presence.Type.unavailable))? "offline": newValue.getMode().name()))).append("<br>");
                 Platform.runLater(() -> displayEngine.loadContent(messageBuilder.toString()));
             });
 
@@ -186,29 +206,28 @@ public class Chat {
 				public synchronized void onChanged(javafx.collections.ListChangeListener.Change<? extends Message> change) {
 					while (change.next()) {
 						if (change.wasAdded()) {
-
 							for (Message message : change.getAddedSubList()) {
 								if (message.getBody() != null) {
 									String pseudo;
-									Color color;
 									// TODO NE MARCHE PAS DU TOUT
 									if (message.getFrom() != null) {
 										pseudo = receiver.get().getEntry().getName();
 										System.out.println(receiver.get().getEntry().getName());
-										color = Color.AQUAMARINE;
 									} else {
 										pseudo = LangManager.text("chat.me");
-										color = Color.DARKORANGE;
 									}
 									// TODO ----------------------
 									Text txtPseudo = new Text(pseudo +": ");
-//									txtPseudo.setFill(color);
-//									txtPseudo.setFont(Font.font("Helvetica", FontWeight.BOLD, 10));
+									final StringProperty messageContainer = new SimpleStringProperty(escapeHtml4(message.getBody()));
 
-									Text txtMessage = new Text(escapeHtml4(message.getBody()).replace("\n".subSequence(0, 1), "<br>".subSequence(0, 4))+ "<br>");
-									messageBuilder.append(txtPseudo.getText()).append(txtMessage.getText());
-									displayEngine.loadContent(messageBuilder.toString());
-//									displayEngine.executeScript("window.scrollTo(0,document.body.scrollHeight);");
+									/**
+									 * Start of the MESSAGE plugin type
+									 */
+									//Parser.getNodeMap().get(PluginType.MESSAGE).forEach(node -> messageContainer.set(((Launchable<String>)node.getValue()).launch(messageContainer.get())));
+									messageContainer.set(((PluginList<String>)Parser.getNodeMap().get(PluginType.MESSAGE)).executeAll(messageContainer.get()));
+                                    messageBuilder.append(txtPseudo.getText()).append(messageContainer.get());
+									String finalMessage = messageBuilder.append("<br>").toString().replace("\n".subSequence(0, 1), "<br>".subSequence(0, 4));
+									displayEngine.loadContent(finalMessage);
 								}
 							}
 						}
@@ -222,7 +241,10 @@ public class Chat {
 			return chat;
 		}
 
+	public WebEngine getDisplayEngine() {
+		return displayEngine;
 	}
+}
 
 	private final ArrayList<ChatTab> chatTabs = new ArrayList<>();
 
