@@ -8,17 +8,26 @@ import com.esgi.vMail.view.option_controler.OptionConnectionListManager.ServerLi
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import org.jivesoftware.smack.AbstractConnectionClosedListener;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Presence.Mode;
 import org.jivesoftware.smack.packet.Presence.Type;
+import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smackx.iqregister.AccountManager;
+import org.jivesoftware.smackx.search.UserSearch;
+import org.jivesoftware.smackx.vcardtemp.VCardManager;
+import org.jivesoftware.smackx.vcardtemp.packet.VCard;
+import org.jxmpp.jid.BareJid;
+import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 public class ConnectionManager {
 	private static ObservableMap<Jid, AccountManager> ownerList = FXCollections.observableHashMap();
@@ -44,14 +53,13 @@ public class ConnectionManager {
 			connection.setChatManager(ChatManager.getInstanceFor(connection));
 			connection.getRoster().setRosterLoadedAtLogin(false);
 			connection.getRoster().addRosterListener(new ListenOnRosterChange(connection));
+			UserSearch userSearch = new UserSearch();
 		}
 	}
 
 	public static ObservableList<Connection> importConnectionListFromXML() {
 		ObservableList<Connection> connectionList = FXCollections.observableArrayList();
-		for (Configuration configuration : DAO_Connection_XML.getAll2ConnectionConf()) {
-			connectionList.add(new Connection(configuration));
-		}
+		connectionList.addAll(DAO_Connection_XML.getAll2ConnectionConf().stream().map(Connection::new).collect(Collectors.toList()));
 		return connectionList;
 	}
 
@@ -76,7 +84,6 @@ public class ConnectionManager {
 
 	public static Contact getContactByJID(Jid JID) {
 		Contact[] contacts = new Contact[ConnectionManager.getContactMap().keySet().size()];
-		System.out.println("Entry size "+contacts.length);
 		ConnectionManager.getContactMap().keySet().toArray(contacts);
 		for (Contact contact : contacts) {
 			if (contact.getEntry().getJid().equals(JID.asBareJid())) {
@@ -100,6 +107,24 @@ public class ConnectionManager {
 		return displayedConnectionList;
 	}
 
+	public static boolean reconnect(Connection connection) {
+		try {
+			connection.connect();
+			connection.login();
+			Thread.sleep(1000);
+			return connection.isAuthenticated();
+		} catch (SmackException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (XMPPException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	public static boolean isConnectionValid(Connection connection) {
 		try {
 			connection.connect();
@@ -113,23 +138,25 @@ public class ConnectionManager {
 		return false;
 	}
 
-	private static void loginEnabledConnection() {
+	private static synchronized void loginEnabledConnection() {
 		for (Connection connection : connectionList.filtered((connectionT) -> connectionT.isEnabled())) {
 			try {
 				connection.connect();
 				connection.login();
+				connection.addConnectionListener(new AbstractConnectionClosedListener() {
+					@Override
+					public void connectionTerminated() {
+						ConnectionManager.reconnect(connection);
+					}
+				});
 				Thread.sleep(1000);
 				ownerList.put(connection.getUser(), AccountManager.getInstance(connection));
 				connection.getRoster().reload();
 				Presence presence = new Presence(Presence.Type.subscribe);
 				connection.sendStanza(presence);
-				System.out.println("Attributes = "+AccountManager.getInstance(connection).getAccountAttributes().toArray());
-				if (connection.getRoster().isSubscribedToMyPresence(connection.getUser())) {
-					presence.setType(Type.available);
-					presence.setMode(Mode.away);
-					connection.sendStanza(presence);
-				}
-				System.out.println("OwnPresence! ===== "+connection.getRoster().getPresence(connection.getUser().asBareJid()));
+				presence.setType(Type.available);
+				connection.sendStanza(presence);
+				connection.setPacketReplyTimeout(30000);
 			} catch (SmackException | IOException | XMPPException | InterruptedException e) {
 				// TODO Auto-generated catch block
 				connection.getStatusMsg().set(e.getMessage());
@@ -137,4 +164,5 @@ public class ConnectionManager {
 		}
 
 	}
+
 }

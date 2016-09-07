@@ -13,15 +13,16 @@ import org.jxmpp.stringprep.XmppStringprepException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
-public class DAO_Connection_XML extends DAO_XML{
+public class DAO_Connection_XML {
 	private final static String fileName = "connections";
 	private static Element rootNode;
 	static {
 		switch (DAL_XML.getOrCreateFile(fileName, fileName +".xml")) {
-		case XMLState.CREATED:
+		case DAO_XML.XMLState.CREATED:
 			DAL_XML.setDocument4File(fileName, "connectionList");
-		case XMLState.EXIST:
+		case DAO_XML.XMLState.EXIST:
 			/*DAL_XML.setXSD4FileByXSDName(fileName, fileName);*/
 			DAO_Connection_XML.rootNode = DAL_XML.getRootNode(fileName);
 			break;
@@ -47,9 +48,7 @@ public class DAO_Connection_XML extends DAO_XML{
 	public static ArrayList<Element> getAll() {
 		Element serverList = rootNode;
 		ArrayList<Element> elementList = new ArrayList<>();
-		for (Element element : serverList.getChildren()) {
-			elementList.add(element);
-		}
+		elementList.addAll(serverList.getChildren());
 		return elementList;
 	}
 	public static Configuration convertServer2Configuration(Element server) {
@@ -65,13 +64,10 @@ public class DAO_Connection_XML extends DAO_XML{
 					.setXmppDomain(JidCreate.domainBareFrom(server.getChild("host").getText()))
 					//TODO A remplacer tout de meme
 					.setSecurityMode(SecurityMode.disabled)
-					.setHostnameVerifier(new HostnameVerifier() {
-						@Override
-						public boolean verify(String hostname, SSLSession session) {
-							// TODO Auto-generated method stub
-							return true;
-						}
-					})
+					.setHostnameVerifier((hostname, session) -> {
+                        // TODO Auto-generated method stub
+                        return true;
+                    })
 					.setResource(server.getChild("resourceName").getText())
 					.setHost(server.getChild("host").getText())
 					.setPort(Integer.parseInt(server.getChild("port").getText()))
@@ -135,10 +131,7 @@ public class DAO_Connection_XML extends DAO_XML{
 	}
 
 	public static ArrayList<Configuration> getAll2ConnectionConf() {
-		ArrayList<Configuration> connectionList = new ArrayList<>();
-		for (Element connectionNode : DAO_Connection_XML.getAll()) {
-			connectionList.add(DAO_Connection_XML.convertServer2Configuration(connectionNode));
-		}
+		ArrayList<Configuration> connectionList = DAO_Connection_XML.getAll().stream().map(DAO_Connection_XML::convertServer2Configuration).collect(Collectors.toCollection(ArrayList::new));
 		return connectionList;
 	}
 }

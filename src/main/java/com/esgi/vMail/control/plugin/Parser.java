@@ -13,21 +13,22 @@ import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.scene.control.Alert;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Created by Linneya on 03/08/2016.
@@ -79,6 +80,59 @@ public class Parser {
         }
     }
 
+    public static boolean addPlugin(InputStream stream, String fileName) {
+        Path temporary = Paths.get("./tmp");
+        Path tmpPluginPath = Paths.get(temporary.toString() + "/" + fileName);
+        Path pluginPath = Paths.get(path.toString() + "/" + fileName);
+        try {
+            Files.deleteIfExists(temporary);
+            Files.createDirectory(temporary);
+
+            FileOutputStream oStream = new FileOutputStream(tmpPluginPath.toString());
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = stream.read(bytes)) != -1) {
+                oStream.write(bytes, 0, read);
+            }
+            oStream.close();
+            Files.move(tmpPluginPath, pluginPath);
+
+            return Files.exists(pluginPath);
+        } catch (FileAlreadyExistsException error) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setContentText("Plugin already exist at " + pluginPath);
+            alert.showAndWait();
+            try {
+                Files.deleteIfExists(tmpPluginPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            Files.deleteIfExists(temporary);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean delPlugin(String fileName) {
+        try {
+            Path pluginPath = Paths.get(path.toString() + "/" + fileName);
+            Module module = factory.getModuleByPath(pluginPath);
+            factory.unregister(module);
+            module = null;
+            Files.delete(pluginPath);
+            return !Files.exists(pluginPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     private static void determineNodeMap() {
         Parser.nodeMap.put(PluginType.CHAT, new PluginList<>());
         Parser.nodeMap.put(PluginType.MESSAGE, new PluginList<String>());
@@ -125,6 +179,21 @@ public class Parser {
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
+        });
+        moduleDir.addDirectoryListener((key, events) -> {
+            events.forEach(watchEvent -> {
+                if (watchEvent.kind().equals(StandardWatchEventKinds.ENTRY_CREATE)) {
+                    try {
+                        System.out.println(watchEvent.context());
+                        factory.register(new Module(path));
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (watchEvent.kind().equals(StandardWatchEventKinds.ENTRY_DELETE)) {
+                        factory.unregister(factory.getModuleByPath((Path) watchEvent.context()));
+                }
+            });
         });
     }
 
@@ -206,7 +275,7 @@ public class Parser {
                     case MESSAGE:
                         Class<?> finalToLaunch = toLaunch;
                         if (method.isAnnotationPresent(PluginReturn.class)) {
-                            plugin = new Launchable<>(param -> {
+                            plugin = new Launchable<String>(param -> {
                                 try {
                                     return (String) method.invoke(finalToLaunch.newInstance(), param);
                                 } catch (IllegalAccessException e) {
@@ -274,10 +343,21 @@ public class Parser {
                 Parser.unloadMap.put(addon, unloader);
             }
         });
+
+        factory.setOnUnregister(event -> factory.unload(event.getSource()));
+
+        factory.setOnUnload(event -> {
+            Module module = event.getSource();
+            module.getLoader().close();
+        });
     }
 
     public static void init1() {
 
+    }
+
+    public static ObservableMap<Module, Launchable<?>> getLoadedModules() {
+        return loadedModules;
     }
 
     public static HashMap<PluginType, PluginList<?>> getNodeMap() {

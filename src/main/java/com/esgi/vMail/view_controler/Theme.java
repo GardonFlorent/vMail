@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class Theme {
 	public static class Description extends Properties{
@@ -51,10 +52,7 @@ public class Theme {
 		}
 	}
 	private static ArrayList<Theme> getThemes() throws IOException {
-		ArrayList<Theme> themes = new ArrayList<>();
-		for (Path path : Theme.getSubPath(rootPath)) {
-			themes.add(new Theme(path));
-		}
+		ArrayList<Theme> themes = Theme.getSubPath(rootPath).stream().map(Theme::new).collect(Collectors.toCollection(ArrayList::new));
 		return themes;
 	}
 

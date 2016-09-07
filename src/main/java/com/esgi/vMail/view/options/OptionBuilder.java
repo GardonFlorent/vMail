@@ -1,5 +1,6 @@
 package com.esgi.vMail.view.options;
 
+import com.esgi.vMail.control.LangManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
@@ -21,6 +22,7 @@ public abstract class OptionBuilder {
 
 	public OptionBuilder() {
 		this.paneContainer = this.makeOptionPane();
+		this.iconAndTitle(OptionConnectionList.class.getClassLoader().getResource("default_theme/"+getOptionName() + IMAGE_EXTENSION).toString() , LangManager.text(KEY_HEADER + getOptionName()));
 	}
 
 	abstract Pane makeOptionPane();

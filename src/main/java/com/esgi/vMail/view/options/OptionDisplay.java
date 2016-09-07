@@ -1,5 +1,6 @@
 package com.esgi.vMail.view.options;
 
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
 public class OptionDisplay extends OptionBuilder {
@@ -12,7 +13,7 @@ public class OptionDisplay extends OptionBuilder {
 	@Override
 	Pane makeOptionPane() {
 		// TODO Auto-generated method stub
-		return null;
+		return new BorderPane();
 	}
 
 }

@@ -19,4 +19,9 @@ public class OptionsWindow extends WindowBuilder {
 		return "vMailOptions.fxml";
 	}
 
+	@Override
+	String getIcon() {
+		return "icon-vMail.png";
+	}
+
 }

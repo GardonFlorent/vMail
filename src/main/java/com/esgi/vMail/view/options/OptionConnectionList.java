@@ -12,10 +12,10 @@ import javafx.scene.layout.VBox;
 
 public class OptionConnectionList extends OptionBuilder {
 
-	public OptionConnectionList() {
+	/*public OptionConnectionList() {
 		super();
 		this.iconAndTitle(OptionConnectionList.class.getClassLoader().getResource("default_theme/"+getOptionName() + IMAGE_EXTENSION).toString() ,LangManager.text(KEY_HEADER + getOptionName()));
-	}
+	}*/
 
 	@Override
 	String getOptionName() {

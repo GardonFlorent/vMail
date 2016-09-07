@@ -20,6 +20,8 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
+import java.util.stream.Collectors;
+
 public class OptionConnectionListManager {
 
 	//Begin of intern class
@@ -174,9 +176,7 @@ public class OptionConnectionListManager {
 
 	public static ObservableList<OptionConnectionListManager.ServerLine> getServerLineList() {
 		ObservableList<OptionConnectionListManager.ServerLine> serverLineList = FXCollections.observableArrayList();
-		for (Connection connection : ConnectionManager.getConnectionList()) {
-			serverLineList.add(new OptionConnectionListManager.ServerLine(connection));
-		}
+		serverLineList.addAll(ConnectionManager.getConnectionList().stream().map(ServerLine::new).collect(Collectors.toList()));
 		return serverLineList;
 	}
 

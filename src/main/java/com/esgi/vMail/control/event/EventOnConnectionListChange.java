@@ -60,12 +60,7 @@ public class EventOnConnectionListChange implements ListChangeListener<Connectio
 		for (Connection connection : removed) {
 			DAO_Connection_XML.deleteConnection(connection.getName());
 			if (ConnectionManager.getDisplayedConnectionList() != null) {
-				ConnectionManager.getDisplayedConnectionList().removeIf(new Predicate<ServerLine>() {
-					@Override
-					public boolean test(ServerLine serverLine) {
-						return serverLine.getConnection().equals(connection);
-					}
-				});
+				ConnectionManager.getDisplayedConnectionList().removeIf(serverLine -> serverLine.getConnection().equals(connection));
 			}
 		}
 	}

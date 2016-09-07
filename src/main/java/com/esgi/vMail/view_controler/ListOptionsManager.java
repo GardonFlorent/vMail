@@ -2,6 +2,8 @@ package com.esgi.vMail.view_controler;
 
 import com.esgi.vMail.view.options.OptionBuilder;
 import com.esgi.vMail.view.options.OptionConnectionList;
+import com.esgi.vMail.view.options.OptionDisplay;
+import com.esgi.vMail.view.options.OptionPlugins;
 import com.esgi.vMail.view_controler.event.EventOptionDisplayDetails;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -35,9 +37,10 @@ public class ListOptionsManager extends ManagerBuilder {
 	@FXML
 	public void initialize() {
 		final ObservableList<OptionBuilder> items = FXCollections.observableArrayList (
-				//new OptionDisplay(),
-				(OptionBuilder) new OptionConnectionList()
-		);
+					new OptionConnectionList(),
+					//new OptionDisplay(),
+					new OptionPlugins()
+				);
 
 		ObservableList<Node> nodeList = FXCollections.observableArrayList();
 		for (OptionBuilder option : items) {

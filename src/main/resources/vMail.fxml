@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.CheckMenuItem?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.input.KeyCodeCombination?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
-<?import javafx.scene.shape.*?>
-<BorderPane prefHeight="700.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.66" xmlns:fx="http://javafx.com/fxml/1">
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.paint.RadialGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane prefHeight="700.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.76-ea" xmlns:fx="http://javafx.com/fxml/1">
    <center>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="540.0" prefWidth="398.0">
          <children>
@@ -26,7 +39,7 @@
                                                    <children>
                                                       <SplitPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                          <items>
-                                                            <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" />
+                                                            <ImageView fx:id="imgAvatar" fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" />
                                                          </items>
                                                          <contextMenu>
                                                             <ContextMenu>
@@ -44,7 +57,7 @@
                                                          <items>
                                                             <AnchorPane>
                                                                <children>
-                                                                  <Label alignment="CENTER" prefHeight="124.0" prefWidth="225.0" text="Label" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                                  <Label fx:id="lblPseudo" alignment="CENTER" prefHeight="124.0" prefWidth="225.0" text="Label" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                                                </children>
                                                             </AnchorPane>
                                                          </items>
@@ -83,7 +96,7 @@
         <menus>
           <Menu mnemonicParsing="false" text="%vMail.menu.contact">
             <items>
-              <MenuItem mnemonicParsing="false" text="%vMail.menu.contact.add" />
+              <MenuItem mnemonicParsing="false" onAction="#addContact" text="%vMail.menu.contact.add" />
                   <MenuItem mnemonicParsing="false" text="%vMail.menu.contact.search" />
             </items>
                <accelerator>
@@ -107,9 +120,9 @@
                   <MenuItem mnemonicParsing="false" text="%vMail.menu.help.about" />
               </items>
             </Menu>
-            <Menu mnemonicParsing="false" text="%vMail.menu.status.offline">
+            <Menu fx:id="menuStatus" mnemonicParsing="false" text="%vMail.menu.status.offline">
               <items>
-                <MenuItem mnemonicParsing="false" text="%vMail.menu.status.online">
+                <MenuItem fx:id="menuStatusOptionOnline" mnemonicParsing="false" text="%vMail.menu.status.online">
                      <graphic>
                         <Circle radius="9.0" stroke="TRANSPARENT" strokeType="INSIDE">
                            <fill>
@@ -123,7 +136,7 @@
                            </fill></Circle>
                      </graphic>
                   </MenuItem>
-                  <MenuItem mnemonicParsing="false" text="%vMail.menu.status.away">
+                  <MenuItem fx:id="menuStatusOptionAway" mnemonicParsing="false" text="%vMail.menu.status.away">
                      <graphic>
                         <Circle radius="9.0" stroke="TRANSPARENT" strokeType="INSIDE">
                            <fill>
@@ -137,7 +150,7 @@
                            </fill></Circle>
                      </graphic>
                   </MenuItem>
-                  <MenuItem mnemonicParsing="false" text="%vMail.menu.status.busy">
+                  <MenuItem fx:id="menuStatusOptionBusy" mnemonicParsing="false" text="%vMail.menu.status.busy">
                      <graphic>
                         <Circle radius="9.0" stroke="TRANSPARENT" strokeType="INSIDE">
                            <fill>
@@ -151,21 +164,7 @@
                            </fill></Circle>
                      </graphic>
                   </MenuItem>
-                  <MenuItem mnemonicParsing="false" text="%vMail.menu.status.hidden">
-                     <graphic>
-                        <Circle radius="9.0" stroke="TRANSPARENT" strokeType="INSIDE">
-                           <fill>
-                              <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                                 <stops>
-                                    <Stop color="#363535" />
-                                    <Stop color="#616161" offset="0.5092592592592593" />
-                                    <Stop color="#fffefe80" offset="1.0" />
-                                 </stops>
-                              </RadialGradient>
-                           </fill></Circle>
-                     </graphic>
-                  </MenuItem>
-                  <MenuItem mnemonicParsing="false" text="%vMail.menu.status.offline">
+                  <MenuItem fx:id="menuStatusOptionOffline" mnemonicParsing="false" text="%vMail.menu.status.offline">
                      <graphic>
                         <Circle radius="9.0" stroke="TRANSPARENT" strokeType="INSIDE">
                            <fill>
@@ -179,10 +178,10 @@
                            </fill></Circle>
                      </graphic>
                   </MenuItem>
-                  <MenuItem mnemonicParsing="false" text="%vMail.menu.status.custom" />
+                  <MenuItem fx:id="menuStatusOptionCustom" mnemonicParsing="false" text="%vMail.menu.status.custom" />
               </items>
                <graphic>
-                  <Circle radius="9.0" stroke="TRANSPARENT" strokeType="INSIDE">
+                  <Circle fx:id="menuRoundStatus" radius="9.0" stroke="TRANSPARENT" strokeType="INSIDE">
                      <fill>
                         <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
                            <stops>

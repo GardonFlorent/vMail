@@ -20,4 +20,9 @@ public class ConnectionEditor extends WindowBuilder {
 		return "vMailConnectionEditor.fxml";
 	}
 
+	@Override
+	String getIcon() {
+		return "icon-vMail.png";
+	}
+
 }

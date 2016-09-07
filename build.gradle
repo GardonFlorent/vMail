@@ -23,6 +23,9 @@ dependencies {
             'org.igniterealtime.smack:smack-java7:4.2.0-beta1',
             'org.igniterealtime.smack:smack-tcp:4.2.0-beta1',
             /*'D&SAnnotations:D&SAnnotations:0.1.0',*/
+            //'com.googlecode.json-simple:json-simple:1.1.1',
+            // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+            'com.fasterxml.jackson.core:jackson-databind:2.8.2',
             project(':Javax-module-processing'),
             project(':vMail-annotations')
 }

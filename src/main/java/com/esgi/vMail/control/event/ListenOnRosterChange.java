@@ -15,9 +15,6 @@ import org.jxmpp.jid.Jid;
 
 import java.util.Collection;
 
-//import com.esgi.vMail.view_controler.MainWindowManager.Group;
-//import com.esgi.vMail.view_controler.MainWindowManager.Group.Contact;
-
 public class ListenOnRosterChange implements RosterListener {
 
 	private Connection connection;
@@ -28,30 +25,25 @@ public class ListenOnRosterChange implements RosterListener {
 		this.connection = connection;
 		this.roster = connection.getRoster();
 		this.chatManager = connection.getChatManager();
-		chatManager.addChatListener(new ChatManagerListener() {
-			@Override
-			public void chatCreated(Chat chat, boolean createdLocally) {
+		chatManager.addChatListener((chat, createdLocally) -> {
 
-				if (createdLocally) {
-					ConnectionManager.getContactMap().putIfAbsent(ConnectionManager.getContactByJID(chat.getParticipant()), new com.esgi.vMail.model.Chat(chat));
-				} else {
-					if (ConnectionManager.getContactByJID(chat.getParticipant()) == null) {
-						ConnectionManager.getContactMap().put(createContact(chat.getParticipant()), new com.esgi.vMail.model.Chat(chat));
-					} else {
-						ConnectionManager.getContactMap().putIfAbsent(ConnectionManager.getContactByJID(chat.getParticipant()), new com.esgi.vMail.model.Chat(chat));
-						ConnectionManager.getContactMap().get(ConnectionManager.getContactByJID(chat.getParticipant())).setChatXMPP(chat);
-					}
-				}
-			}
-		});
+            if (createdLocally) {
+                ConnectionManager.getContactMap().putIfAbsent(ConnectionManager.getContactByJID(chat.getParticipant()), new com.esgi.vMail.model.Chat(chat));
+            } else {
+                if (ConnectionManager.getContactByJID(chat.getParticipant()) == null) {
+                    ConnectionManager.getContactMap().put(createContact(chat.getParticipant()), new com.esgi.vMail.model.Chat(chat));
+                } else {
+                    ConnectionManager.getContactMap().putIfAbsent(ConnectionManager.getContactByJID(chat.getParticipant()), new com.esgi.vMail.model.Chat(chat));
+                    ConnectionManager.getContactMap().get(ConnectionManager.getContactByJID(chat.getParticipant())).setChatXMPP(chat);
+                }
+            }
+        });
 	}
 
 	@Override
 	public void entriesAdded(Collection<Jid> addeds) {
-		for (Jid jid : addeds) {
-			this.createContact(jid);
-			//SI cela plante, le code qui etait ici est maintenant dans createContactAndChat
-		}
+		//SI cela plante, le code qui etait ici est maintenant dans createContactAndChat
+		addeds.forEach(this::createContact);
 	}
 
 	public Contact createContact (Jid jid) {
@@ -66,11 +58,7 @@ public class ListenOnRosterChange implements RosterListener {
 		chatManager.createChat(jid.asEntityJidIfPossible());
 		for (RosterGroup group : newContact.getEntry().getGroups()) {
 			if (!ConnectionManager.getGroupList().filtered((groupPane) -> {return groupPane.getGroupXMPP().equals(group);}).isEmpty()) {
-				for (Group groupPane : ConnectionManager.getGroupList()) {
-					if (groupPane.getGroupXMPP().equals(group)) {
-						groupPane.getContactList().add(newContact);
-					}
-				}
+				ConnectionManager.getGroupList().stream().filter(groupPane -> groupPane.getGroupXMPP().equals(group)).forEach(groupPane -> groupPane.getContactList().add(newContact));
 			} else {
 				Group newGroup = new Group(group);
 				ConnectionManager.getGroupList().add(newGroup);
@@ -83,9 +71,7 @@ public class ListenOnRosterChange implements RosterListener {
 	@Override
 	public void entriesUpdated(Collection<Jid> updateds) {
 		// TODO Auto-generated method stub
-		updateds.forEach((jid) -> {
-			System.out.println(jid.asBareJid() + " updated ->" + ConnectionManager.getContactByJID(jid));
-		});
+		updateds.forEach((jid) -> System.out.println(jid.asBareJid() + " updated ->" + ConnectionManager.getContactByJID(jid)));
 	}
 
 	@Override
@@ -100,9 +86,7 @@ public class ListenOnRosterChange implements RosterListener {
 			for (RosterGroup group : roster.getEntry(jid.asBareJid()).getGroups()) {
 				ConnectionManager.getGroupList().forEach((groupPane) -> {
 					if (groupPane.getGroupXMPP().equals(group)) {
-						groupPane.getContactList().removeIf((contactView) -> {
-							return contactView.getEntry().equals(roster.getEntry(jid.asBareJid()));
-						});
+						groupPane.getContactList().removeIf((contactView) -> contactView.getEntry().equals(roster.getEntry(jid.asBareJid())));
 					}
 				});
 			}

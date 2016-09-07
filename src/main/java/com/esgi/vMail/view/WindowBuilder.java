@@ -4,6 +4,7 @@ import com.esgi.vMail.control.LangManager;
 import com.esgi.vMail.view_controler.ManagerBuilder;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -81,11 +82,15 @@ public abstract class WindowBuilder {
             // Show the scene containing the root layout.
             Scene scene = new Scene(rootLayout);
             windowStage.setScene(scene);
+			windowStage.getIcons().add(new Image(WindowBuilder.class.getClassLoader().getResourceAsStream(this.getIcon())));
         } catch (IOException e) {
             e.printStackTrace();
         }
 	}
+
 	abstract Object loadController();
 	abstract String getStageTitle();
 	abstract String getFXMLPath();
+	abstract String getIcon();
+
 }

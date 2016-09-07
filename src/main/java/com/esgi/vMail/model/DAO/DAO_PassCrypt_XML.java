@@ -5,7 +5,7 @@ import com.esgi.vMail.model.DAL.DAL_XML;
 import com.esgi.vMail.model.DAO.DAO_XML.XMLState;
 import org.jdom2.Element;
 
-public class DAO_PassCrypt_XML {
+public class DAO_PassCrypt_XML extends DAO_XML {
 	final static String fileName = "secret";
 	private static Element rootNode;
 	static {

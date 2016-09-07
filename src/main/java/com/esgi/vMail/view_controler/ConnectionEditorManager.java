@@ -5,6 +5,7 @@ import com.esgi.vMail.model.Configuration;
 import com.esgi.vMail.model.Connection;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jxmpp.jid.impl.JidCreate;
 import org.jxmpp.stringprep.XmppStringprepException;
@@ -71,7 +72,7 @@ public class ConnectionEditorManager extends ManagerBuilder {
 	}
 
 	/**
-	 * @param Name the Name to set
+	 * @param name the Name to set
 	 */
 	public void setName(String name) {
 		this.txtBName.setText(name);
@@ -85,7 +86,7 @@ public class ConnectionEditorManager extends ManagerBuilder {
 	}
 
 	/**
-	 * @param User the User to set
+	 * @param user the User to set
 	 */
 	public void setUser(String user) {
 		this.txtBUser.setText(user);
@@ -99,7 +100,7 @@ public class ConnectionEditorManager extends ManagerBuilder {
 	}
 
 	/**
-	 * @param Password the Password to set
+	 * @param password the Password to set
 	 */
 	public void setPassword(String password) {
 		this.txtBPassword.setText(password);
@@ -113,7 +114,7 @@ public class ConnectionEditorManager extends ManagerBuilder {
 	}
 
 	/**
-	 * @param ServerAddress the ServerAddress to set
+	 * @param serverAddress the ServerAddress to set
 	 */
 	public void setServerAddress(String serverAddress) {
 		this.txtBServerAddress.setText(serverAddress);
@@ -127,7 +128,7 @@ public class ConnectionEditorManager extends ManagerBuilder {
 	}
 
 	/**
-	 * @param Port the Port to set
+	 * @param port the Port to set
 	 */
 	public void setPort(int port) {
 		this.txtBPort.setText(Integer.toString(port));
@@ -141,7 +142,7 @@ public class ConnectionEditorManager extends ManagerBuilder {
 	}
 
 	/**
-	 * @param ResourceName the ResourceName to set
+	 * @param resourceName the ResourceName to set
 	 */
 	public void setResourceName(String resourceName) {
 		this.txtBResourceName.setText(resourceName);
@@ -155,7 +156,7 @@ public class ConnectionEditorManager extends ManagerBuilder {
 	}
 
 	/**
-	 * @param Priority the Priority to set
+	 * @param priorityValue the Priority to set
 	 */
 	public void setPriorityValue(double priorityValue) {
 		this.sliderPriority.setValue(priorityValue);
@@ -169,7 +170,7 @@ public class ConnectionEditorManager extends ManagerBuilder {
 	}
 
 	/**
-	 * @param ConnectionStatus the ConnectionStatus to set
+	 * @param connectionStatus the ConnectionStatus to set
 	 */
 	public void setLabelConnectionStatus(String connectionStatus) {
 		this.labelConnectionStatus.setText(connectionStatus);
@@ -278,12 +279,8 @@ public class ConnectionEditorManager extends ManagerBuilder {
 						.setXmppDomain(JidCreate.domainBareFrom(txtBServerAddress.getText()))
 						.setHost(txtBServerAddress.getText())
 						.setPort(Integer.parseInt(txtBPort.getText()))
-						.setHostnameVerifier(new HostnameVerifier() {
-							@Override
-							public boolean verify(String hostname, SSLSession session) {
-								return true;
-							}
-						})
+						.setHostnameVerifier((hostname, session) -> true)
+						.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
 						.build(),
 						txtBName.getText()
 				)));

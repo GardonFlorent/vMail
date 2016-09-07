@@ -11,6 +11,8 @@ import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
+import org.jivesoftware.smackx.iqregister.AccountManager;
+import org.jivesoftware.smackx.vcardtemp.VCardManager;
 
 import java.io.IOException;
 
@@ -21,6 +23,8 @@ public class Connection extends XMPPTCPConnection {
 	private boolean isEnabled;
 	private Roster roster;
 	private ChatManager chatManager;
+	private AccountManager accountManager;
+	private VCardManager vCardManager;
 	public Connection(XMPPTCPConnectionConfiguration config) {
 		super(config);
 		this.name = this.getServiceName().toString();
@@ -139,6 +143,9 @@ public class Connection extends XMPPTCPConnection {
 		super.login();
 		if (this.isAuthenticated()) {
 			this.getStatusMsg().set("Logged");
+			this.chatManager = ChatManager.getInstanceFor(this);
+			this.accountManager = AccountManager.getInstance(this);
+			this.vCardManager = VCardManager.getInstanceFor(this);
 		}
 		this.isLogged.set(super.isAuthenticated());
 	}
@@ -147,5 +154,13 @@ public class Connection extends XMPPTCPConnection {
 	public void disconnect() {
 		super.disconnect();
 		this.isLogged.set(super.isAuthenticated());
+	}
+
+	public VCardManager getvCardManager() {
+		return vCardManager;
+	}
+
+	public AccountManager getAccountManager() {
+		return accountManager;
 	}
 }

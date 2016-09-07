@@ -21,4 +21,9 @@ public class MainWindow extends WindowBuilder{
 	String getFXMLPath() {
 		return "vMail.fxml";
 	}
+
+	@Override
+	String getIcon() {
+		return "icon-vMail.png";
+	}
 }
